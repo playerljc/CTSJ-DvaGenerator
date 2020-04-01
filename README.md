@@ -199,7 +199,7 @@ export async function fetchtUpdate(payload) {
 ```js
   yield put({
     type: "receive",
-    payload: { [service&#x5BF9;&#x5E94;&#x7684;&#x65B9;&#x6CD5;&#x540D;]: &#x63A5;&#x53E3;&#x8FD4;&#x56DE;&#x6570;&#x636E; }
+    payload: { [service对应的方法名]: 接口返回数据 }
   });
 ```
 				
