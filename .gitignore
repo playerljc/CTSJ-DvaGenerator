@@ -35,6 +35,8 @@ npm-debug
 
 yarn.lock
 
+lib
+
 **/.idea
 **/node_modules
 **/dist
