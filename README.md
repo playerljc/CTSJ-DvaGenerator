@@ -11,27 +11,27 @@
 import { stringify } from 'qs';
 import request from '@/utils/request';
 
-// &#x5217;&#x8868;
+// 列表
 export async function fetchtList(params) {
   return request.get('fetchList');
 }
 
-// &#x8BE6;&#x60C5;
+// 详情
 export async function fetchtInfo(id) {
   return request.get('fetchtInfo');
 }
 
-// &#x6DFB;&#x52A0;
+// 添加
 export async function fetchtSave(payload) {
   return request.post('fetchSave');
 }
 
-// &#x5220;&#x9664;
+// 删除
 export async function fetchtDelete(id) {
   return request.delete('fetchtDelete');
 }
 
-// &#x4FEE;&#x6539;
+// 修改
 export async function fetchtUpdate(payload) {
   return request.put('fetchtUpdate');
 }
@@ -56,7 +56,7 @@ export async function fetchtUpdate(payload) {
       },
     },
     effects: {
-      // &#x5217;&#x8868;
+      // 列表
       *fetchList({ payload }, { call, put, select }) {
         const response = yield call(fetchtList, payload);
         if (response.code === 0) {
@@ -66,7 +66,7 @@ export async function fetchtUpdate(payload) {
           });
         }
       },
-      // &#x8BE6;&#x60C5;
+      // 详情
       *fetchInfo({ payload:{id} }, { call, put, select }) {
         const response = yield call(fetchInfo, id);
         if (response.code === 0) {
@@ -76,7 +76,7 @@ export async function fetchtUpdate(payload) {
           });
         }
       },
-      // &#x6DFB;&#x52A0;
+      // 添加
       *feachSave({ payload: { success, ...other } }, { call, put }) {
         const response = yield call(fetchtSave, other);
         if (response.code === 0) {
@@ -86,7 +86,7 @@ export async function fetchtUpdate(payload) {
           yield put({ type: 'fetchList', payload: {page:0,limit:10} });
         }
       },
-      // &#x4FEE;&#x6539;
+      // 修改
       *feachUpdate({ payload: { success, ...other } }, { call, put }) {
         const response = yield call(feachUpdate, other);
         if (response.code === 0) {
@@ -96,7 +96,7 @@ export async function fetchtUpdate(payload) {
           yield put({ type: 'fetchList', payload: {page:0,limit:10} });
         }
       },
-      // &#x5220;&#x9664;
+      // 删除
       *feachDelete({ payload: { success, id } }, { call, put }) {
         const response = yield call(feachDelete, id);
         if (response.code === 0) {
@@ -205,21 +205,21 @@ export async function fetchtUpdate(payload) {
 				
   4. 完整的操作 
 ```js
-  // 1.&#x8C03;&#x7528;&#x63A5;&#x53E3;
+  // 1.调用接口
   const response = yield call(Service[key], other);
-  // Service&#x4E2D;&#x7684;&#x9ED8;&#x8BA4;&#x5BFC;&#x51FA;&#x5FC5;&#x987B;&#x6709;&#x7684;&#x952E;
-  // codeKey&#x4E3A;&#x72B6;&#x6001;&#x57DF;
-  // codeSuccessKey&#x4E3A;&#x72B6;&#x6001;&#x57DF;&#x4E2D;&#x6210;&#x529F;&#x6807;&#x8BC6;
-  // dataKey&#x4E3A;&#x6570;&#x636E;&#x57DF;
+  // Service中的默认导出必须有的键
+  // codeKey为状态域
+  // codeSuccessKey为状态域中成功标识
+  // dataKey为数据域
   const { codeKey, codeSuccessKey, dataKey, messageKey } = Service.default;
   if (response[codeKey] === codeSuccessKey) {
-    // &#x5982;&#x679C;&#x6709;success&#x8C03;&#x7528;success&#x4F20;&#x9012;data&#x548C;message
-    // 2.&#x8C03;&#x7528;&#x56DE;&#x8C03;&#x51FD;&#x6570;
+    // 如果有success调用success传递data和message
+    // 2.调用回调函数
     if (success) {
       success(response[dataKey],response[messageKey]);
     }
-    // &#x5411;&#x6570;&#x636E;&#x6D41;&#x91CC;&#x653E;&#x5165;Service&#x7684;&#x65B9;&#x6CD5;&#x540D;&#x4E3A;key,response[dataKey]&#x4E3A;&#x503C;&#x7684;&#x6570;&#x636E;
-    // 3.&#x8C03;&#x7528;&#x6570;&#x636E;&#x6D41;
+    // 向数据流里放入Service的方法名为key,response[dataKey]为值的数据
+    // 3.调用数据流
     yield put({
       type: "receive",
       payload: { [key]: response[dataKey] }
@@ -257,40 +257,40 @@ export async function fetchtUpdate(payload) {
   import { stringify } from 'qs';
   import request from '@/utils/request';
 
-  // &#x5217;&#x8868;
+  // 列表
   export async function fetchtList(params) {
     return request.get('fetchList');
   }
 
-  // &#x8BE6;&#x60C5;
+  // 详情
   export async function fetchtInfo(id) {
     return request.get('fetchtInfo');
   }
 
-  // &#x6DFB;&#x52A0;
+  // 添加
   export async function fetchtSave(payload) {
     return request.post('fetchSave');
   }
 
-  // &#x5220;&#x9664;
+  // 删除
   export async function fetchtDelete(id) {
     return request.delete('fetchtDelete');
   }
 
-  // &#x4FEE;&#x6539;
+  // 修改
   export async function fetchtUpdate(payload) {
     return request.put('fetchtUpdate');
   }
 
-  // &#x9ED8;&#x8BA4;&#x5BFC;&#x51FA;&#x4E0E;&#x63A5;&#x53E3;&#x5148;&#x5173;&#x7684;&#x53C2;&#x6570;
+  // 默认导出与接口先关的参数
   export default {
-    // &#x63A5;&#x53E3;&#x6210;&#x529F;&#x5931;&#x8D25;&#x7684;&#x72B6;&#x6001;&#x952E;
+    // 接口成功失败的状态键
     codeKey: 'code',
-    // &#x63A5;&#x53E3;&#x6210;&#x529F;&#x7684;&#x72B6;&#x6001;&#x503C;
+    // 接口成功的状态值
     codeSuccessKey: 200,
-    // &#x63A5;&#x53E3;&#x6570;&#x636E;&#x7684;&#x952E;
+    // 接口数据的键
     dataKey: 'data',
-    // &#x63A5;&#x53E3;&#x6D88;&#x606F;&#x952E;
+    // 接口消息键
     messageKey: 'message',
   };
 ```
