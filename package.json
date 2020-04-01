@@ -1,0 +1,42 @@
+{
+  "name": "@ctsj/dvagenerator",
+  "version": "1.0.0",
+  "description": "dva数据流的一个生成器",
+  "main": "lib/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "buildpackage": "ctbuild buildpackagets",
+    "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\"",
+    "lint": "tslint -p tsconfig.json",
+    "link": "npm lin @ctsj/build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/playerljc/CTSJ-DvaGenerator.git"
+  },
+  "author": "playerljc <playerljc@163.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/playerljc/CTSJ-DvaGenerator/issues"
+  },
+  "files":[
+    "lib"
+  ],
+  "homepage": "https://github.com/playerljc/CTSJ-DvaGenerator#readme",
+  "devDependencies": {
+    "babel-eslint": "^8.1.2",
+    "eslint": "^4.14.0",
+    "eslint-config-airbnb": "^16.0.0",
+    "eslint-plugin-babel": "^4.0.0",
+    "eslint-plugin-compat": "^2.1.0",
+    "eslint-plugin-import": "^2.8.0",
+    "eslint-plugin-jsx-a11y": "^6.0.3",
+    "eslint-plugin-markdown": "^1.0.0-beta.6",
+    "eslint-plugin-react": "^7.0.1",
+    "prop-types": "15.5.10",
+    "prettier": "^1.19.1",
+    "tslint": "^6.0.0",
+    "tslint-config-prettier": "^1.18.0",
+    "typescript": "^3.8.2"
+  }
+}

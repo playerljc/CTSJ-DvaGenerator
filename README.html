@@ -1,44 +1,51 @@
-# CTSJ-DvaGenerator
+<h1>CTSJ-DvaGenerator</h1>
+<p>
+	dva数据流的一个生成器，能通过Service自动生成组件的mapStateToProps、mapDispatchToProps和Model
+</p>
 
-&ensp;&ensp;dva数据流的一个生成器，能通过Service自动生成组件的mapStateToProps、mapDispatchToProps和Model
+<h1>简介</h1>
+<div>
+	<p>一个简单的例子，用dva编写一个标椎的用户模块，用户模块中是标准的CRUD操作，我们大致会这样去写</p>
 
-# 简介
-
-&ensp;&ensp;一个简单的例子，用dva编写一个标椎的用户模块，用户模块中是标准的CRUD操作，我们大致会这样去写
-
-1. 定义UserService，UserService大致会是这样
-```js
+	<ol>
+		<li>
+			<p>定义UserService，UserService大致会是这样</p>
+			<code>
+<pre>
 import { stringify } from 'qs';
 import request from '@/utils/request';
 
-// &#x5217;&#x8868;
+// 列表
 export async function fetchtList(params) {
   return request.get('fetchList');
 }
 
-// &#x8BE6;&#x60C5;
+// 详情
 export async function fetchtInfo(id) {
   return request.get('fetchtInfo');
 }
 
-// &#x6DFB;&#x52A0;
+// 添加
 export async function fetchtSave(payload) {
   return request.post('fetchSave');
 }
 
-// &#x5220;&#x9664;
+// 删除
 export async function fetchtDelete(id) {
   return request.delete('fetchtDelete');
 }
 
-// &#x4FEE;&#x6539;
+// 修改
 export async function fetchtUpdate(payload) {
   return request.put('fetchtUpdate');
 }
-```
-
-2. 定义UserModel，UserModel大致会是这样
-```js
+</pre>
+			</code>
+		</li>
+		<li>
+			<p>定义UserModel，UserModel大致会是这样</p>
+			<code>
+<pre>
   import {
     fetchtList,
     fetchtInfo,
@@ -56,7 +63,7 @@ export async function fetchtUpdate(payload) {
       },
     },
     effects: {
-      // &#x5217;&#x8868;
+      // 列表
       *fetchList({ payload }, { call, put, select }) {
         const response = yield call(fetchtList, payload);
         if (response.code === 0) {
@@ -66,7 +73,7 @@ export async function fetchtUpdate(payload) {
           });
         }
       },
-      // &#x8BE6;&#x60C5;
+      // 详情
       *fetchInfo({ payload:{id} }, { call, put, select }) {
         const response = yield call(fetchInfo, id);
         if (response.code === 0) {
@@ -76,7 +83,7 @@ export async function fetchtUpdate(payload) {
           });
         }
       },
-      // &#x6DFB;&#x52A0;
+      // 添加
       *feachSave({ payload: { success, ...other } }, { call, put }) {
         const response = yield call(fetchtSave, other);
         if (response.code === 0) {
@@ -86,7 +93,7 @@ export async function fetchtUpdate(payload) {
           yield put({ type: 'fetchList', payload: {page:0,limit:10} });
         }
       },
-      // &#x4FEE;&#x6539;
+      // 修改
       *feachUpdate({ payload: { success, ...other } }, { call, put }) {
         const response = yield call(feachUpdate, other);
         if (response.code === 0) {
@@ -96,7 +103,7 @@ export async function fetchtUpdate(payload) {
           yield put({ type: 'fetchList', payload: {page:0,limit:10} });
         }
       },
-      // &#x5220;&#x9664;
+      // 删除
       *feachDelete({ payload: { success, id } }, { call, put }) {
         const response = yield call(feachDelete, id);
         if (response.code === 0) {
@@ -116,10 +123,13 @@ export async function fetchtUpdate(payload) {
       },
     },
   };
-```
-			
-3. 定义UserPage, UserPage大致会是这样 
-```js
+</pre>
+			</code>
+		</li>
+		<li>
+			<p>定义UserPage, UserPage大致会是这样</p>
+			<code>
+<pre>
   import React from 'react';
   import { connect } from 'dva';
 
@@ -141,30 +151,42 @@ export async function fetchtUpdate(payload) {
   });
 
   export default connect(mapStateToProps, mapDispatchToProps)(User);
-```
-			
+</pre>
+			</code>
+		</li>
+	</ol>
 
-&ensp;&ensp;我们会发现一个问题，像这样比较常规的CRUD操作，从Service -> Model -> Component的mapDispatchToProps方法的名字都是一一对应的， 而Model中的Effects操作基本都是调用Service中相应的接口，并且注入到数据流当中，而且Service也是按照相应模块编写的比如UserService就是处理User相关的操作， 这样就和Model中的namespace相对应，再则Model中的reducers里面应该只有一个receive的reducer，不应该有多个处理，effects中所有的put(reducer)都应该调用put({type:'receive'})来进行处理 所以我们就可以根据Service自动生成mapDispatchToProps和Model中的effects和reducers，我们只处理标椎模块，如果自动生成的这三部分不能满足需求，可以进行重写覆盖
+	<p>我们会发现一个问题，像这样比较常规的CRUD操作，从Service -> Model -> Component的mapDispatchToProps方法的名字都是一一对应的， 而Model中的Effects操作基本都是调用Service中相应的接口，并且注入到数据流当中，而且Service也是按照相应模块编写的比如UserService就是处理User相关的操作， 这样就和Model中的namespace相对应，再则Model中的reducers里面应该只有一个receive的reducer，不应该有多个处理，effects中所有的put(reducer)都应该调用put({type:'receive'})来进行处理 所以我们就可以根据Service自动生成mapDispatchToProps和Model中的effects和reducers，我们只处理标椎模块，如果自动生成的这三部分不能满足需求，可以进行重写覆盖</p>
+</div>
 
-# 处理
-
-1. mapStateToProps 
-```js
+<h1>处理</h1>
+<ol>
+	<li>
+		<p>mapStateToProps</p>
+		<code>
+<pre>
   return {
     [namespace]: state[namespace],
     loading: state.loading.global
   };
-```
-		
+</pre>
+		</code>
+	</li>
 
-2. mapDispatchToProps 和Service方法一一对应，例如 `
-```js
+	<li>
+		<p>mapDispatchToProps</p>
+		<p>和Service方法一一对应，例如</p>
+		<code>
+<pre>
   mapDispatchToProps[methodName] = params => dispatch(Object.assign({ type }, params));
-```
-		
+</pre>
+		</code>
+	</li>
 
-3. Model 
-```js
+	<li>
+		<p>Model</p>
+		<code>
+<pre>
   namespace,
   effects: {},
   reducers: {
@@ -175,17 +197,25 @@ export async function fetchtUpdate(payload) {
       };
     }
   }
-```
-		
+</pre>
+		</code>
+	</li>
 
-4. effects中的方法和Service的方法一一对用，effects中的方法只做三件事
-  1. 调用Service中相应接口 
-```js
+	<li>
+		<p>effects中的方法和Service的方法一一对用，effects中的方法只做三件事</p>
+		<ol>
+			<li>
+				调用Service中相应接口
+				<code>
+<pre>
   const response = yield call(Service[key], other);
-```
-				
-  2. 调用success回调函数 
-```js
+</pre>
+				</code>
+			</li>
+			<li>
+				调用success回调函数
+				<code>
+<pre>
   const { codeKey, codeSuccessKey, dataKey, messageKey } = Service.default;
   if (response[codeKey] === codeSuccessKey) {
     if (success) {
@@ -193,43 +223,54 @@ export async function fetchtUpdate(payload) {
     }
     ...
   }
-```
-				
-  3. 调用receice的reduce 
-```js
+</pre>
+				</code>
+			</li>
+			<li>
+				调用receice的reduce
+				<code>
+<pre>
   yield put({
     type: "receive",
-    payload: { [service&#x5BF9;&#x5E94;&#x7684;&#x65B9;&#x6CD5;&#x540D;]: &#x63A5;&#x53E3;&#x8FD4;&#x56DE;&#x6570;&#x636E; }
+    payload: { [service对应的方法名]: 接口返回数据 }
   });
-```
-				
-  4. 完整的操作 
-```js
-  // 1.&#x8C03;&#x7528;&#x63A5;&#x53E3;
+</pre>
+				</code>
+			</li>
+			<li>
+				完整的操作
+				<code>
+<pre>
+  // 1.调用接口
   const response = yield call(Service[key], other);
-  // Service&#x4E2D;&#x7684;&#x9ED8;&#x8BA4;&#x5BFC;&#x51FA;&#x5FC5;&#x987B;&#x6709;&#x7684;&#x952E;
-  // codeKey&#x4E3A;&#x72B6;&#x6001;&#x57DF;
-  // codeSuccessKey&#x4E3A;&#x72B6;&#x6001;&#x57DF;&#x4E2D;&#x6210;&#x529F;&#x6807;&#x8BC6;
-  // dataKey&#x4E3A;&#x6570;&#x636E;&#x57DF;
+  // Service中的默认导出必须有的键
+  // codeKey为状态域
+  // codeSuccessKey为状态域中成功标识
+  // dataKey为数据域
   const { codeKey, codeSuccessKey, dataKey, messageKey } = Service.default;
   if (response[codeKey] === codeSuccessKey) {
-    // &#x5982;&#x679C;&#x6709;success&#x8C03;&#x7528;success&#x4F20;&#x9012;data&#x548C;message
-    // 2.&#x8C03;&#x7528;&#x56DE;&#x8C03;&#x51FD;&#x6570;
+    // 如果有success调用success传递data和message
+    // 2.调用回调函数
     if (success) {
       success(response[dataKey],response[messageKey]);
     }
-    // &#x5411;&#x6570;&#x636E;&#x6D41;&#x91CC;&#x653E;&#x5165;Service&#x7684;&#x65B9;&#x6CD5;&#x540D;&#x4E3A;key,response[dataKey]&#x4E3A;&#x503C;&#x7684;&#x6570;&#x636E;
-    // 3.&#x8C03;&#x7528;&#x6570;&#x636E;&#x6D41;
+    // 向数据流里放入Service的方法名为key,response[dataKey]为值的数据
+    // 3.调用数据流
     yield put({
       type: "receive",
       payload: { [key]: response[dataKey] }
     });
   }
-```
-				
+</pre>
+				</code>
+			</li>
+		</ol>
+	</li>
 
-5. 处理完成之后我们的UserPage的props中会有如下数据 
-```js
+	<li>
+		<p>处理完成之后我们的UserPage的props中会有如下数据</p>
+		<code>
+<pre>
   {
     user: {
       fetchList:[],
@@ -239,65 +280,71 @@ export async function fetchtUpdate(payload) {
       fetchUpdate:{},
     }
   }
-```
-		
+</pre>
+		</code>
+	</li>
+</ol>
 
-# 安装
-
-
-```js
+<h1>安装</h1>
+<code>
+<pre>
   npm install @ctsj/dvagenerator
-```
+</pre>
+</code>
 
-
-# 例子
-
-1. 定义UserService 
-```js
+<h1>例子</h1>
+<ol>
+	<li>
+		<p>定义UserService</p>
+		<code>
+<pre>
   import { stringify } from 'qs';
   import request from '@/utils/request';
 
-  // &#x5217;&#x8868;
+  // 列表
   export async function fetchtList(params) {
     return request.get('fetchList');
   }
 
-  // &#x8BE6;&#x60C5;
+  // 详情
   export async function fetchtInfo(id) {
     return request.get('fetchtInfo');
   }
 
-  // &#x6DFB;&#x52A0;
+  // 添加
   export async function fetchtSave(payload) {
     return request.post('fetchSave');
   }
 
-  // &#x5220;&#x9664;
+  // 删除
   export async function fetchtDelete(id) {
     return request.delete('fetchtDelete');
   }
 
-  // &#x4FEE;&#x6539;
+  // 修改
   export async function fetchtUpdate(payload) {
     return request.put('fetchtUpdate');
   }
 
-  // &#x9ED8;&#x8BA4;&#x5BFC;&#x51FA;&#x4E0E;&#x63A5;&#x53E3;&#x5148;&#x5173;&#x7684;&#x53C2;&#x6570;
+  // 默认导出与接口先关的参数
   export default {
-    // &#x63A5;&#x53E3;&#x6210;&#x529F;&#x5931;&#x8D25;&#x7684;&#x72B6;&#x6001;&#x952E;
+    // 接口成功失败的状态键
     codeKey: 'code',
-    // &#x63A5;&#x53E3;&#x6210;&#x529F;&#x7684;&#x72B6;&#x6001;&#x503C;
+    // 接口成功的状态值
     codeSuccessKey: 200,
-    // &#x63A5;&#x53E3;&#x6570;&#x636E;&#x7684;&#x952E;
+    // 接口数据的键
     dataKey: 'data',
-    // &#x63A5;&#x53E3;&#x6D88;&#x606F;&#x952E;
+    // 接口消息键
     messageKey: 'message',
   };
-```
-		
+</pre>
+		</code>
+	</li>
 
-2. 定义UserModel 
-```js
+	<li>
+		<p>定义UserModel</p>
+		<code>
+<pre>
   import ServiceRegister from '@ctsj/dvagenerator';
 
   export default Object.assign(ServiceRegister.model('user'), {
@@ -310,11 +357,14 @@ export async function fetchtUpdate(payload) {
       },
     },
   });
-```
-		
+</pre>
+		</code>
+	</li>
 
-3. 定义UserPage 
-```js
+	<li>
+		<p>定义UserPage</p>
+		<code>
+<pre>
   import React from 'react';
   import { connect } from 'dva';
   import ServiceRegister from '@ctsj/dvagenerator';
@@ -335,28 +385,51 @@ export async function fetchtUpdate(payload) {
   });
 
   export default connect(mapStateToProps, mapDispatchToProps)(User);
-```
-		
+</pre>
+		</code>
+	</li>
 
-4. 注册Service(在第一个执行文件执行的所有引用之后注册,umi是src/global.jsx) 
-```js
+	<li>
+		<p>注册Service(在第一个执行文件执行的所有引用之后注册,umi是src/global.jsx)</p>
+		<code>
+<pre>
   import * as UserService from './service/UserService';
   import ServiceRegister from '@ctsj/dvagenerator';
 
   ServiceRegister.initConfig({
     user: UserService,
   });
-```
-		
+</pre>
+		</code>
+	</li>
+</ol>
 
-# API
+<h1>API</h1>
+<ul>
+	<li>
+		<div>
+			initConfig - 服务注册初始化
+		</div>
+	</li>
 
-* initConfig - 服务注册初始化
+	<li>
+		<div>
+			mapStateToProps - 自动生成mapStateToProps
+		</div>
+	</li>
+	<li>
+		<div>
+			mapDispatchToProps - 自动生成mapDispatchToProps
+		</div>
+	</li>
+	<li>
+		<div>
+			model - 生成Service对应的Model
+		</div>
+	</li>
+</ul>
 
-* mapStateToProps - 自动生成mapStateToProps
-* mapDispatchToProps - 自动生成mapDispatchToProps
-* model - 生成Service对应的Model
-
-# 其他
-
-demo目录下附带了一个todolist的demo，用的是umi的dva工程
+<h1>其他</h1>
+<p>
+	demo目录下附带了一个todolist的demo，用的是umi的dva工程
+</p>

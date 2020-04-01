@@ -1,0 +1,70 @@
+:global {
+  .ctsj-state-todolist {
+    &-list-body {
+      &-item {
+        display: flex;
+        align-items: center;
+        position: relative;
+        padding-left: 20px;
+        margin-top: 20px;
+        background-color: #fff;
+        &:after {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 10px;
+          height: 100%;
+          background-color: #09c;
+        }
+
+        &-inner {
+          flex-grow: 1;
+          min-width: 0;
+          display: flex;
+          align-items: center;
+          &-checkbox {
+            flex-shrink: 0;
+            width: 30px;
+            height: 30px;
+            border-radius: 3px;
+            margin-right: 5px;
+          }
+          &-value {
+            flex-grow: 1;
+            min-width: 0;
+            word-break: break-word;
+            white-space: pre-wrap;
+            font-weight: 600;
+          }
+          &-editorable {
+            flex-grow: 1;
+            min-width: 0;
+            input {
+              width: 100%;
+              height: 30px;
+              outline: 0;
+            }
+          }
+        }
+
+        &-delete {
+          flex-shrink: 0;
+          margin-right: 10px;
+          color: #ccc;
+          font-size: 40px !important;
+          &:hover {
+            cursor: pointer;
+          }
+        }
+      }
+
+      &-item.disable {
+        background-color: rgba(0,0,0,.2);
+        &:after {
+          background-color: rgba(0,153,204,.2);
+        }
+      }
+    }
+  }
+}
