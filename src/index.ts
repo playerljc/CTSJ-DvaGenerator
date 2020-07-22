@@ -37,13 +37,18 @@ const Adapter: IAdapter = {
    * 映射namespace到Props
    * 映射loading到Props
    */
-  mapStateToProps({ namespace, state }: IMapStateToProps) {
-    const result: IMapStateToPropsReturn = {
-      [namespace]: state[namespace],
-      loading: state.loading.global
+  mapStateToProps({ namespaces, state }: IMapStateToProps) {
+    const props: IMapStateToPropsReturn = {
+      loading: state.loading
     };
 
-    return result;
+    if (namespaces && namespaces.length) {
+      namespaces.forEach((namespace) => {
+        props[namespace] = state[namespace];
+      });
+    }
+
+    return props;
   },
   /**
    * mapDispatchToProps - 自动生成mapDispatchToProps
@@ -67,16 +72,15 @@ const Adapter: IAdapter = {
       const Service = Config[namespace];
 
       Object.keys(Service).forEach(key => {
-        // methodName是namespace + 接口方法名首字母大写
-        // 例子 namespace是todolist Service中有fetchList接口
-        // 则方法名为todolistFetchList
-        const methodName = `${namespace}${key
-          .charAt(0)
-          .toUpperCase()}${key.substring(1)}`;
-        const type = `${namespace}/${key}`;
-        // params必须是对象且只有一个对象
-        mapDispatchToProps[methodName] = params =>
-          dispatch(Object.assign({ type }, params));
+        if(key !== 'default') {
+          // methodName是namespace + 接口方法名首字母大写
+          // 例子 namespace是todolist Service中有fetchList接口
+          // 则方法名为todolistFetchList
+          const methodName = `${namespace}${key.charAt(0).toUpperCase()}${key.substring(1)}`;
+          const type = `${namespace}/${key}`;
+          // params必须是对象且只有一个对象
+          mapDispatchToProps[methodName] = params => dispatch(Object.assign({ type }, params));
+        }
       });
     });
 
@@ -103,6 +107,16 @@ const Adapter: IAdapter = {
     // service的实例
     const Service = Config[namespace];
 
+    const keys = Object.keys(Service);
+
+    const defaultState = {};
+
+    keys.forEach(key => {
+      if(key !== 'default') {
+        defaultState[key] = Service[key].defaultResult();
+      }
+    });
+
     // 模型
     const model: IModel = {
       // namespace
@@ -121,24 +135,25 @@ const Adapter: IAdapter = {
     };
 
     // 所有除了default
-    Object.keys(Service).forEach(key => {
+    keys.forEach(key => {
       if (key !== "default") {
         // params是调用mapDispatchToProps的参数
         // success是回调函数
-        model.effects[key] = function*({ success, ...other }, { call, put }) {
+        model.effects[key] = function*(params, { call, put }) {
           // 1.调用接口
-          const response = yield call(Service[key], other);
+          const response = yield call(Service[key], params);
           // Service中的默认导出必须有的键
           // codeKey为状态域
           // codeSuccessKey为状态域中成功标识
           // dataKey为数据域
-          const { codeKey, codeSuccessKey, dataKey, messageKey } = Service.default;
+          const { codeKey, codeSuccessKey, dataKey } = Service.default;
+
           if (response[codeKey] === codeSuccessKey) {
-            // 如果有success调用success传递data和message
-            // 2.调用回调函数
-            if (success) {
-              success(response[dataKey],response[messageKey]);
-            }
+            // // 如果有success调用success传递data和message
+            // // 2.调用回调函数
+            // if (success) {
+            //   success(response[dataKey],response[messageKey]);
+            // }
             // 向数据流里放入Service的方法名为key,response[dataKey]为值的数据
             // 3.调用数据流
             yield put({

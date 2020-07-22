@@ -21,7 +21,7 @@ export interface IState {
  * @interface
  */
 export interface IMapStateToProps {
-  namespace: string;
+  namespaces: string[];
   state: IState;
 }
 
