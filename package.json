@@ -1,6 +1,6 @@
 {
   "name": "@ctsj/dvagenerator",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "dva数据流的一个生成器",
   "main": "lib/index.js",
   "scripts": {

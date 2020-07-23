@@ -109,13 +109,13 @@ const Adapter: IAdapter = {
 
     const keys = Object.keys(Service);
 
-    const defaultState = {};
-
-    keys.forEach(key => {
-      if(key !== 'default') {
-        defaultState[key] = Service[key].defaultResult();
-      }
-    });
+    // const defaultState = {};
+    //
+    // keys.forEach(key => {
+    //   if(key !== 'default') {
+    //     defaultState[key] = Service[key].defaultResult();
+    //   }
+    // });
 
     // 模型
     const model: IModel = {
