@@ -1,3 +1,6 @@
+import React, { Component } from "react";
+import { connect } from "umi";
+
 import {
   IConfig,
   IAdapter,
@@ -9,6 +12,9 @@ import {
 } from "./define";
 
 let Config: IConfig;
+
+// 存放所有的models
+const models = new Map();
 
 /**
  * ServiceRegister
@@ -43,7 +49,7 @@ const Adapter: IAdapter = {
     };
 
     if (namespaces && namespaces.length) {
-      namespaces.forEach((namespace) => {
+      namespaces.forEach(namespace => {
         props[namespace] = state[namespace];
       });
     }
@@ -60,7 +66,7 @@ const Adapter: IAdapter = {
     // service的实例
     const mapDispatchToProps: IMapDispatchToPropsReturn = {};
 
-    let keys:string[] = [];
+    let keys: string[] = [];
     if (!namespaces || !namespaces.length) {
       // 如果不传递模块集合或者模块集合为空数组，则生成所有Service的方法隐射
       keys = Object.keys(Config);
@@ -69,26 +75,42 @@ const Adapter: IAdapter = {
     }
 
     keys.forEach(namespace => {
+      // 接口
       const Service = Config[namespace];
 
       Object.keys(Service).forEach(key => {
-        if(key !== 'default') {
+        if (key !== "default") {
           // methodName是namespace + 接口方法名首字母大写
           // 例子 namespace是todolist Service中有fetchList接口
           // 则方法名为todolistFetchList
-          const methodName = `${namespace}${key.charAt(0).toUpperCase()}${key.substring(1)}`;
+          const methodName = `${namespace}${key
+            .charAt(0)
+            .toUpperCase()}${key.substring(1)}`;
           const type = `${namespace}/${key}`;
           // params必须是对象且只有一个对象
-          mapDispatchToProps[methodName] = params => dispatch(Object.assign({ type }, params));
+          mapDispatchToProps[methodName] = params =>
+            dispatch({type, ...params});
         }
       });
+
+      // reducers receive
+      mapDispatchToProps[`${namespace}Receive`] = params => {
+        debugger
+        dispatch({
+          type:`${namespace}/receive`,
+          payload: params,
+        });
+      };
     });
+
+
 
     return mapDispatchToProps;
   },
   /**
    * model - 生成Service对应的Model
    * @param {String} - namespace
+   * @param {Object} - merge的数据
    * @return {Object} - Model
    * 此方默认处理Service中的所有接口，默认生成的Effect只调用接口，
    * 把接口返回值注入到以方法名为Key，返回的dataKey为数据的数据流中，且在model的namespace键中创建
@@ -103,22 +125,18 @@ const Adapter: IAdapter = {
    *    }
    * }
    */
-  model(namespace: string) {
+  model(namespace: string, mergeData = {}) {
     // service的实例
     const Service = Config[namespace];
 
     const keys = Object.keys(Service);
 
-    // const defaultState = {};
-    //
-    // keys.forEach(key => {
-    //   if(key !== 'default') {
-    //     defaultState[key] = Service[key].defaultResult();
-    //   }
-    // });
-
     // 模型
     const model: IModel = {
+      // 缺省数据
+      defaultState: {},
+      // 数据
+      state: {},
       // namespace
       namespace,
       // effects
@@ -165,7 +183,42 @@ const Adapter: IAdapter = {
       }
     });
 
-    return model;
+    const modelIns = Object.assign(model, mergeData || {});
+
+    // 设置model的缺省值
+    model.defaultState = "state" in modelIns ? modelIns.state || {} : {};
+
+    models.set(namespace, modelIns);
+
+    return modelIns;
+  },
+  /**
+   * 加入自动清除的connect
+   * @param serviceName - Array
+   * @return {function(*=, *=): function(*=): *}
+   */
+  connect(serviceNames) {
+    return (mapStateToProps, mapDispatchToProps) => {
+      return Component => {
+        class ComponentWrap extends React.PureComponent {
+          componentWillUnmount() {
+            serviceNames.forEach(serviceName => {
+              const model = models.get(serviceName);
+
+              const { defaultState } = model;
+
+              this.props[`${model.namespace}Receive`](defaultState);
+            });
+          }
+
+          render() {
+            return (<Component {...this.props} />);
+          }
+        }
+
+        return connect(mapStateToProps, mapDispatchToProps)(ComponentWrap);
+      };
+    };
   }
 };
 

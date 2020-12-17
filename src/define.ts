@@ -64,6 +64,11 @@ export interface IService {
  * @interface
  */
 export interface IModel {
+  // defaultState
+  defaultState: [] | {},
+  // state
+  state: [] | {},
+  // namespace
   namespace: string;
   // effects
   effects: any;
