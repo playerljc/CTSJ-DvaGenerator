@@ -6,8 +6,8 @@
 
 &ensp;&ensp;一个简单的例子，用dva编写一个标椎的用户模块，用户模块中是标准的CRUD操作，我们大致会这样去写
 
-1. 定义UserService，UserService大致会是这样
-```js
+######1. 定义UserService，UserService大致会是这样
+```javascript
 import { stringify } from 'qs';
 import request from '@/utils/request';
 
@@ -37,8 +37,8 @@ export async function fetchtUpdate(payload) {
 }
 ```
 
-2. 定义UserModel，UserModel大致会是这样
-```js
+######2. 定义UserModel，UserModel大致会是这样
+```javascript
   import {
     fetchtList,
     fetchtInfo,
@@ -118,8 +118,8 @@ export async function fetchtUpdate(payload) {
   };
 ```
 			
-3. 定义UserPage, UserPage大致会是这样 
-```js
+######3. 定义UserPage, UserPage大致会是这样 
+```javascript
   import React from 'react';
   import { connect } from 'dva';
 
@@ -142,29 +142,25 @@ export async function fetchtUpdate(payload) {
 
   export default connect(mapStateToProps, mapDispatchToProps)(User);
 ```
-			
-
 &ensp;&ensp;我们会发现一个问题，像这样比较常规的CRUD操作，从Service -> Model -> Component的mapDispatchToProps方法的名字都是一一对应的， 而Model中的Effects操作基本都是调用Service中相应的接口，并且注入到数据流当中，而且Service也是按照相应模块编写的比如UserService就是处理User相关的操作， 这样就和Model中的namespace相对应，再则Model中的reducers里面应该只有一个receive的reducer，不应该有多个处理，effects中所有的put(reducer)都应该调用put({type:'receive'})来进行处理 所以我们就可以根据Service自动生成mapDispatchToProps和Model中的effects和reducers，我们只处理标椎模块，如果自动生成的这三部分不能满足需求，可以进行重写覆盖
 
 # 处理
 
-1. mapStateToProps 
-```js
+###### 1. mapStateToProps 
+```javascript
   return {
     [namespace]: state[namespace],
     loading: state.loading.global
   };
 ```
-		
 
-2. mapDispatchToProps 和Service方法一一对应，例如 `
-```js
+###### 2. mapDispatchToProps和Service方法一一对应，例如 `
+```javascript
   mapDispatchToProps[methodName] = params => dispatch(Object.assign({ type }, params));
 ```
-		
 
-3. Model 
-```js
+###### 3. Model 
+```javascript
   namespace,
   effects: {},
   reducers: {
@@ -176,16 +172,15 @@ export async function fetchtUpdate(payload) {
     }
   }
 ```
-		
 
-4. effects中的方法和Service的方法一一对用，effects中的方法只做三件事
-  1. 调用Service中相应接口 
-```js
+###### 4. effects中的方法和Service的方法一一对用，effects中的方法只做三件事
+  1 调用Service中相应接口 
+```javascript
   const response = yield call(Service[key], other);
 ```
 				
-  2. 调用success回调函数 
-```js
+  2 调用success回调函数 
+```javascript
   const { codeKey, codeSuccessKey, dataKey, messageKey } = Service.default;
   if (response[codeKey] === codeSuccessKey) {
     if (success) {
@@ -195,16 +190,16 @@ export async function fetchtUpdate(payload) {
   }
 ```
 				
-  3. 调用receice的reduce 
-```js
+  3 调用receice的reduce 
+```javascript
   yield put({
     type: "receive",
     payload: { [service对应的方法名]: 接口返回数据 }
   });
 ```
 				
-  4. 完整的操作 
-```js
+  4 完整的操作 
+```javascript
   // 1.调用接口
   const response = yield call(Service[key], other);
   // Service中的默认导出必须有的键
@@ -226,10 +221,9 @@ export async function fetchtUpdate(payload) {
     });
   }
 ```
-				
 
-5. 处理完成之后我们的UserPage的props中会有如下数据 
-```js
+###### 5. 处理完成之后我们的UserPage的props中会有如下数据 
+```javascript
   {
     user: {
       fetchList:[],
@@ -245,41 +239,73 @@ export async function fetchtUpdate(payload) {
 # 安装
 
 
-```js
+```javascript
   npm install @ctsj/dvagenerator
 ```
 
 
 # 例子
 
-1. 定义UserService 
-```js
+###### 1. 定义UserService 
+```javascript
   import { stringify } from 'qs';
   import request from '@/utils/request';
 
   // 列表
-  export async function fetchtList(params) {
-    return request.get('fetchList');
-  }
+  export const fetchtList(params) = (() => {
+    return {
+      call: () => {
+        return request.get('fetchList');
+      },
+      // 接口的默认值
+      defaultResult: () => ({
+        total: 0,
+        list: [],
+      }),
+    };
+  })();
 
   // 详情
-  export async function fetchtInfo(id) {
-    return request.get('fetchtInfo');
-  }
+  export const fetchtInfo() = (() => {
+    return {
+      call: (id) => {
+        return request.get('fetchtInfo');
+      },
+      defaultResult: () => ({
+        id:'',
+        ...
+      })
+    };
+  })();
 
   // 添加
-  export async function fetchtSave(payload) {
-    return request.post('fetchSave');
+  export const fetchtSave() {
+    return {
+      call: (id) => {
+        return request.get('fetchtSave');
+      },
+      defaultResult: () => true
+    };
   }
 
   // 删除
-  export async function fetchtDelete(id) {
-    return request.delete('fetchtDelete');
+  export const fetchtDelete() {
+    return {
+      call: (id) => {
+        return request.get('fetchtDelete');
+      },
+      defaultResult: () => true
+    };
   }
 
   // 修改
-  export async function fetchtUpdate(payload) {
-    return request.put('fetchtUpdate');
+  export const fetchtUpdate() {
+    return {
+      call: (id) => {
+        return request.get('fetchtUpdate');
+      },
+      defaultResult: () => true
+    };
   }
 
   // 默认导出与接口先关的参数
@@ -296,50 +322,106 @@ export async function fetchtUpdate(payload) {
 ```
 		
 
-2. 定义UserModel 
-```js
-  import ServiceRegister from '@ctsj/dvagenerator';
+###### 2. 定义UserModel 
+```javascript
+  // util.js
+  /**
+   * serviceRegister - Service的注册
+   * @type {function(...[*]=)}
+   */
+  export const serviceRegister = (function () {
+    const services = {};
+    let isLoad = false;
+  
+    return function () {
+      if(isLoad) return;
+      const requireComponent = require.context('../services', true, /.*\.(js)$/);
+  
+      requireComponent.keys().forEach((fileName) => {
+        const serviceKey = fileName.substring(2, fileName.length - 3);
+        services[serviceKey] = requireComponent(fileName);
+      });
+  
+      ServiceRegister.initConfig(services);
+      isLoad = true;
+    };
+  })();
 
-  export default Object.assign(ServiceRegister.model('user'), {
+  // example.js
+  import ServiceRegister from '@ctsj/dvagenerator';
+  import { serviceRegister } from '@/utils/utils';
+  
+  serviceRegister();
+  
+  const Model = {
+    namespace: 'example',
+  };
+  
+  Object.assign(Model, ServiceRegister.model('example',{
     state: {
-      fetchList: [],
+      fetchUsers: [],
+      fetchUser: {},
     },
-    subscriptions: {
-      setup({ history, dispatch }) {
-        console.log('user', 'setup');
-      },
-    },
-  });
+  }));
+  
+  export default Model;
 ```
-		
 
-3. 定义UserPage 
-```js
+###### 3. 定义UserPage 
+```javascript
   import React from 'react';
-  import { connect } from 'dva';
+  
+  import { Link } from 'umi';
   import ServiceRegister from '@ctsj/dvagenerator';
-
-  class User extends React.Component {
-    ...
+  
+  class Example extends React.Component {
+    componentDidMount() {
+      this.props.exampleFetchUsers();
+      this.props.exampleFetchUser();
+  
+      this.props.aaaFetchUsers();
+      this.props.aaaFetchUser();
+  
+      this.props.userQuery();
+      this.props.userQueryCurrent();
+      this.props.userQueryNotices();
+    }
+  
+    render() {
+      console.log(this.props);
+      return <div>
+        <div>Example</div>
+        <div>
+          <Link to="/user">go-user</Link>
+        </div>
+      </div>;
+    }
   }
-
-  const mapStateToProps = state =>
-    ServiceRegister.mapStateToProps({
-      namespace: 'user',
-      state,
+  
+  const mapStateToProps = (state) => {
+    return Object.assign(
+      ServiceRegister.mapStateToProps({
+        namespaces: ['example','user','aaa'],
+        state,
+      }),
+      {
+        loading: state.loading,
+      },
+    );
+  }
+  
+  const mapDispatchToProps = (dispatch) =>
+    ServiceRegister.mapDispatchToProps({
+      namespaces: ['example','user','aaa'],
+      dispatch,
     });
-
-  const mapDispatchToProps = dispatch => ServiceRegister.mapDispatchToProps({
-    namespaces: ['user'],
-    dispatch,
-  });
-
-  export default connect(mapStateToProps, mapDispatchToProps)(User);
+  
+  export default ServiceRegister.connect(['example','user','aaa'])(mapStateToProps, mapDispatchToProps)(Example)
 ```
 		
 
 4. 注册Service(在第一个执行文件执行的所有引用之后注册,umi是src/global.jsx) 
-```js
+```javascript
   import * as UserService from './service/UserService';
   import ServiceRegister from '@ctsj/dvagenerator';
 
