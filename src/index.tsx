@@ -95,7 +95,6 @@ const Adapter: IAdapter = {
 
       // reducers receive
       mapDispatchToProps[`${namespace}Receive`] = params => {
-        debugger
         dispatch({
           type:`${namespace}/receive`,
           payload: params,
